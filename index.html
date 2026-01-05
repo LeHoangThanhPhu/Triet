@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Ôn Tập Triết Học Mác - Lênin</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-wrapper {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            border-color: var(--primary-color);
+            background-color: #f5f3ff;
+        }
+
+        .option.correct {
+            border-color: var(--success-color);
+            background-color: #ecfdf5;
+            color: #065f46;
+        }
+
+        .option.wrong {
+            border-color: var(--error-color);
+            background-color: #fef2f2;
+            color: #991b1b;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-wrapper">
+    <header>
+        <h1>Trắc Nghiệm Triết Học Mác - Lênin</h1>
+        <p>Hệ thống 64 câu hỏi ôn tập (Chương 1 & 2)</p>
+    </header>
+
+    <div id="quiz-container" class="card">
+        <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+        <div id="question-number" style="color: #64748b; font-weight: bold;">Câu 1/64</div>
+        <div id="question" class="question-text">Đang tải câu hỏi...</div>
+        <div id="options" class="options-container"></div>
+        
+        <div class="controls">
+            <button id="prev-btn" disabled>Câu trước</button>
+            <button id="next-btn">Tiếp theo</button>
+        </div>
+    </div>
+
+    <div id="result-container" class="card hidden">
+        <h2>Hoàn thành bài ôn tập!</h2>
+        <div class="score-display">Bạn đúng <span id="final-score">0</span> / 64 câu</div>
+        <button onclick="location.reload()" style="margin-top: 20px; width: 100%;">Làm lại từ đầu</button>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        { q: "Chủ nghĩa duy vật thường là thế giới quan của các giai cấp và các lực lượng xã hội tiến bộ.", a: ["A", "B", "C", "D"], c: 0 },
+        { q: "Nhiệm vụ của triết học là:", a: ["Giải thích thế giới.", "Cải tạo thế giới.", "Giải thích và cải tạo thế giới.", "Là khoa học của các khoa học."], c: 2 },
+        { q: "Có quan niệm cho rằng: Thế giới bao gồm trần gian, thiên đường và địa ngục. Theo quan điểm duy vật biện chứng quan niệm đó:", a: ["Đúng", "Sai", "Vừa đúng vừa sai", "Tất cả đều sai"], c: 1 },
+        { q: "Những triết gia cho rằng con người không có khả năng nhận thức được thế giới thuộc trường phái:", a: ["Chủ nghĩa duy vật", "Chủ nghĩa duy tâm", "Trường phái khả tri", "Trường phái bất khả tri"], c: 3 },
+        { q: "Câu nói: “Có thực mới vực được đạo” là quan điểm:", a: ["Duy vật", "Duy tâm", "Vừa duy vật vừa duy tâm", "Không thuộc hai loại trên"], c: 0 },
+        { q: "Ba phát minh lớn ảnh hưởng tới sự ra đời của triết học duy vật biện chứng là:", a: ["Bảo toàn năng lượng, Thuyết tế bào, Vạn vật hấp dẫn", "Bảo toàn năng lượng, Thuyết tế bào, Thuyết tiến hóa", "Bảo toàn năng lượng, Vạn vật hấp dẫn, Thuyết nhật tâm", "Điện tử, Nguyên tử, Bảo toàn năng lượng"], c: 1 },
+        { q: "V.I. Lênin bổ sung triết học Mác trong hoàn cảnh:", a: ["CNTB chưa ra đời", "CNTB độc quyền ra đời", "CNTB tự do cạnh tranh", "CNTB hiện đại"], c: 1 },
+        { q: "Nhận xét nào sau đây về phương pháp SIÊU HÌNH là SAI:", a: ["Nhận thức đối tượng ở trạng thái tĩnh", "Chỉ nhìn thấy cây mà không thấy rừng", "Có công lớn trong cơ học cổ điển", "Không có vai trò gì trong lịch sử triết học"], c: 3 },
+        { q: "Chủ nghĩa duy vật CHẤT PHÁC là kết quả của thời kỳ:", a: ["Cổ đại", "Trung cổ", "Phục hưng", "Khai sáng"], c: 0 },
+        { q: "Triết học ra đời vào khoảng thời gian:", a: ["Thế kỷ VIII - VI TCN", "Thế kỷ III TCN", "Thế kỷ II TCN", "Thế kỷ I SCN"], c: 0 },
+        { q: "Triết học là:", a: ["Hệ thống tri thức lý luận chung nhất về thế giới và vị trí con người", "Khoa học về khả năng tư duy", "Khoa học chính trị", "Khoa học về đấu tranh giai cấp"], c: 0 },
+        { q: "Triết học Mác ra đời khi:", a: ["PTSX TBCN trở thành thống trị", "PTSX TBCN mới xuất hiện", "CNTB thành chủ nghĩa đế quốc", "CNTB độc quyền nhà nước"], c: 0 },
+        { q: "Triết học Mác - Lênin có chức năng:", a: ["Thế giới quan và phương pháp luận", "Hoàn thiện lý trí và đạo đức", "Khoa học của mọi khoa học", "Chỉ đạo thực tiễn"], c: 0 },
+        { q: "Nguồn gốc lý luận của Triết học Mác là:", a: ["Triết học cổ điển Đức", "Kinh tế chính trị hiện đại", "Chủ nghĩa xã hội", "Phép biện chứng tự phát"], c: 0 },
+        { q: "Chủ nghĩa duy vật và duy tâm đối lập nhau về phương diện:", a: ["Bản thể luận", "Nhận thức luận", "Nhân sinh quan", "Phương pháp luận"], c: 0 },
+        { q: "Phương pháp coi nguyên nhân biến đổi NẰM NGOÀI đối tượng là:", a: ["Biện chứng", "Trừu tượng hóa", "Logic-lịch sử", "Siêu hình"], c: 3 },
+        { q: "Khác biệt mặt thứ 2 vấn đề cơ bản: Duy vật cho rằng con người có khả năng nhận thức, còn Duy tâm cho rằng:", a: ["Nhận thức là ý thức tự nhận thức chính mình", "Con người không có khả năng nhận thức", "Chỉ có ý thức tồn tại", "Ý thức quyết định vật chất"], c: 0 },
+        { q: "Vấn đề quan hệ vật chất - ý thức là vấn đề cơ bản vì:", a: ["Giải quyết nó mới giải quyết được các vấn đề khác và chi phối các giải quyết còn lại", "Nó tồn tại suốt lịch sử", "Nó được nhiều nhà triết học quan tâm", "Nó phân định Duy vật và Duy tâm"], c: 0 },
+        { q: "Trình tự xuất hiện Thế giới quan:", a: ["Triết học - Tôn giáo - Thần thoại", "Thần thoại - Tôn giáo - Triết học", "Thần thoại - Triết học - Tôn giáo", "Tôn giáo - Thần thoại - Triết học"], c: 1 },
+        { q: "Triết học ra đời do:", a: ["Ý muốn chủ quan", "Thực tiễn và nhu cầu thực tiễn", "Sự suy tư cá nhân", "Sự sáng tạo của nhà tư tưởng"], c: 1 },
+        { q: "Triết học nghiên cứu thế giới như một:", a: ["Đối tượng vật chất cụ thể", "Hệ đối tượng nhất định", "Chỉnh thể thống nhất", "Thực thể cụ thể"], c: 2 },
+        { q: "Hình thức nào xác định vật chất là Thực tại khách quan:", a: ["Duy vật chất phác", "Duy vật siêu hình", "Duy vật biện chứng", "Duy vật nói chung"], c: 2 },
+        { q: "Các phạm trù: vật chất, ý thức, vận động... thuộc khoa học:", a: ["Triết học", "Sinh học", "Hóa học", "Vật lý"], c: 0 },
+        { q: "Quan điểm “Vừa thấy cây vừa thấy rừng” là:", a: ["Phương pháp biện chứng", "Phương pháp siêu hình", "Tư duy trừu tượng", "Logic-lịch sử"], c: 0 },
+        { q: "“Vẻ đẹp không nằm ở đôi má hồng... mà ở đôi mắt kẻ si tình” là:", a: ["Duy tâm khách quan", "Duy tâm chủ quan", "Chủ nghĩa duy lý", "Duy vật tự phát"], c: 1 },
+        { q: "Chủ nghĩa duy tâm có hai hình thức:", a: ["Tuyệt đối và tương đối", "Cảm tính và lý tính", "Chủ quan và khách quan", "Nhất nguyên và nhị nguyên"], c: 2 },
+        { q: "Biện chứng bao gồm:", a: ["Khách quan và chủ quan", "Tự nhiên và xã hội", "Duy tâm và duy vật", "Vật chất và ý thức"], c: 0 },
+        { q: "Ba hình thức của Chủ nghĩa duy vật theo lịch sử:", a: ["Cổ đại, Siêu hình, Máy móc", "Cổ đại, Siêu hình, Biện chứng", "Nhân bản, Siêu hình, Biện chứng", "Siêu hình và Biện chứng"], c: 1 },
+        { q: "Vấn đề cơ bản của Triết học là:", a: ["Quan hệ Trời - Đất", "Quan hệ Vật chất - Ý thức", "Quan hệ Tri thức - Tình cảm", "Quan hệ Vật chất - Vật thể"], c: 1 },
+        { q: "Mặt thứ 2 của vấn đề cơ bản triết học trả lời câu hỏi:", a: ["Vật chất và ý thức cái nào có trước?", "Con người có khả năng nhận thức thế giới không?", "Ý thức có quyết định vật chất không?", "Vật chất lệ thuộc ý thức thế nào?"], c: 1 },
+        { q: "Triết học Mác ra đời vào:", a: ["Những năm 40 thế kỷ XIX", "Những năm 40 thế kỷ XVIII", "Những năm 40 thế kỷ XVII", "Những năm 40 thế kỷ XVI"], c: 0 },
+        { q: "Tiền đề lý luận trực tiếp của triết học Mác:", a: ["Kinh tế chính trị Anh", "CNXH không tưởng Pháp", "Triết học cổ điển Đức", "Tất cả các ý trên"], c: 2 },
+        { q: "Ba tiền đề khoa học tự nhiên:", a: ["Tế bào, Tiến hóa, Giá trị thặng dư", "Tế bào, Tiến hóa, Bảo toàn năng lượng", "Tế bào, Tiến hóa, Đấu tranh giai cấp", "Bảo toàn năng lượng, Tiến hóa, Thặng dư"], c: 1 },
+        { q: "Trường phái Duy vật cho rằng bản chất thế giới là:", a: ["Ý thức", "Vật thể", "Vật chất", "Ý niệm"], c: 2 },
+        { q: "Các hình thức cơ bản của phép biện chứng:", a: ["Chất phác, Duy tâm Đức, Duy vật biện chứng", "Chất phác, Duy tâm Đức, Duy vật tầm thường", "Chất phác, Duy vật Mác-Lênin, Duy tâm Trung cổ", "Duy tâm Đức, Duy vật Mác-Lênin, XH không tưởng"], c: 0 },
+        { q: "Định luật bảo toàn năng lượng chứng minh quan điểm:", a: ["Siêu hình phủ nhận vận động", "Duy tâm phủ nhận vận động", "Biện chứng duy vật về sự chuyển hóa", "Thế giới không chuyển hóa"], c: 2 },
+        { q: "Thực chất bước chuyển cách mạng của Mác - Ăngghen:", a: ["Thống nhất thế giới quan duy vật và phép biện chứng", "Thống nhất Heghen và Phoiobac", "Phê phán Phoiobac", "Phê phán Heghen"], c: 0 },
+        { q: "Ba phát minh KHTN thế kỷ XIX chứng minh vật chất có tính:", a: ["Tách rời", "Biện chứng về vận động và phát triển", "Không tồn tại thực", "Vô tận"], c: 1 },
+        { q: "Văn kiện cương lĩnh đầu tiên của chủ nghĩa Mác:", a: ["Sự khốn cùng của triết học", "Gia đình thần thánh", "Tuyên ngôn của Đảng Cộng sản", "Tư bản"], c: 2 },
+        { q: "Đối tượng nghiên cứu của Triết học là:", a: ["Quy luật vận động phát triển CHUNG NHẤT", "Quy luật tự nhiên, xã hội", "Quy luật xã hội và tư duy", "Quy luật vận động tự nhiên"], c: 0 },
+        { q: "Vai trò Triết học Mác-Lênin trong đổi mới ở Việt Nam:", a: ["Thế giới quan, phương pháp luận khoa học", "Công cụ cải tạo xã hội cũ", "Kim chỉ nam cho mọi hoạt động", "Phương pháp xây dựng mô hình mới"], c: 0 },
+        { q: "Tính chất cơ bản của thế giới quan Triết học Mác - Lênin:", a: ["Sáng tạo và tiến bộ", "Cách mạng và khoa học", "Kế thừa và cụ thể", "Lịch sử và tính đảng"], c: 1 },
+        { q: "Triết học đóng vai trò là:", a: ["Toàn bộ thế giới quan", "Toàn bộ nhân sinh quan", "Hạt nhân lý luận của thế giới quan", "Một loại hình thế giới quan bình thường"], c: 2 },
+        { q: "Câu nào sau đây CHƯA CHUẨN XÁC:", a: ["Chủ nghĩa Mác do Mác sáng lập", "Chủ nghĩa Mác là khoa học của mọi khoa học", "Chủ nghĩa Mác giải phóng giai cấp vô sản", "Chủ nghĩa Mác kế thừa tinh hoa nhân loại"], c: 1 },
+        { q: "Thực chất bước chuyển cách mạng (câu 48):", a: ["Thống nhất phép biện chứng và thế giới quan duy vật", "Thống nhất phép siêu hình và duy vật", "Xây dựng phép siêu hình duy tâm", "Phát hiện sứ mệnh công nhân"], c: 0 },
+        { q: "Cống hiến vĩ đại nhất của Mác về triết học:", a: ["Duy vật biện chứng", "Chủ nghĩa duy vật lịch sử", "Thực tiễn là trung tâm", "Phép biện chứng duy vật"], c: 1 },
+        { q: "Triết học duy tâm có vai trò:", a: ["Làm suy đồi tư duy", "Không đóng góp gì", "Kiềm hãm tư duy", "Đóng góp cho sự phát triển tư duy, xã hội (ở khía cạnh nhận thức)"], c: 3 },
+        { q: "Hạn chế lớn nhất Duy vật phương Tây Cổ đại:", a: ["Tự phát, ngây thơ", "Siêu hình", "Chủ quan", "Tư biện"], c: 0 },
+        { q: "Hạn chế lớn nhất Duy vật phương Tây thế kỷ 17-18:", a: ["Tự phát", "Siêu hình", "Chủ quan", "Ngụy biện"], c: 1 },
+        { q: "Tác phẩm cương lĩnh đầu tiên (câu 53):", a: ["Bản thảo 1844", "Tuyên ngôn của Đảng Cộng sản", "Tuyên ngôn độc lập", "Hệ tư tưởng Đức"], c: 1 },
+        { q: "Giai đoạn 1844-1848, Ăngghen nhằm mục đích:", a: ["Phê phán tôn giáo", "Hình thành nguyên lý DVBC, DVLS và CNXHKH", "Nghiên cứu thực tiễn", "Viết bộ Tư bản"], c: 1 },
+        { q: "Trường phái Duy tâm cho rằng bản chất thế giới là:", a: ["Nguyên tử", "Vật thể", "Ý thức", "Vật chất"], c: 2 },
+        { q: "Chủ nghĩa duy vật coi thế giới như cỗ máy biệt lập, tĩnh tại là:", a: ["Chất phác", "Siêu hình", "Biện chứng", "Duy vật nói chung"], c: 1 },
+        { q: "Nguồn gốc ra đời của triết học:", a: ["Phân chia giai cấp", "Trí thức biết hoài nghi", "Tư duy đạt trình độ khái quát và có tầng lớp trí thức", "Sự ngạc nhiên"], c: 2 },
+        { q: "Đối tượng của triết học là nghiên cứu những vấn đề:", a: ["Quy luật khoa học cụ thể", "Quy luật tự nhiên, xã hội", "Hiện tượng tự nhiên", "Chung nhất của tự nhiên, xã hội và con người"], c: 3 },
+        { q: "Vấn đề cơ bản của triết học (câu 61):", a: ["Quan hệ tự nhiên - xã hội", "Quan hệ ý thức - vật chất", "Quan hệ ý thức - vật thể", "Quan hệ vật chất - ý thức"], c: 3 },
+        { q: "Cơ sở phân chia Duy vật và Duy tâm:", a: ["Quan niệm thế giới", "Giải quyết vấn đề vật chất", "Giải quyết vấn đề cơ bản của triết học", "Quan niệm con người"], c: 2 },
+        { q: "Nhà triết học Duy vật cho rằng:", a: ["Vật chất có trước và quyết định ý thức", "Vật thể quyết định vật chất", "Ý thức có trước", "Vật thể cấu thành ý thức"], c: 0 },
+        { q: "Nhà triết học Duy tâm cho rằng:", a: ["Vật chất tạo ý thức", "Vật thể có trước", "Ý thức là tính thứ nhất, quyết định vật chất", "Vật thể quyết định vật chất"], c: 2 }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let answered = new Array(quizData.length).fill(null);
+
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const progressEl = document.getElementById('progress');
+    const qNumEl = document.getElementById('question-number');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+
+    function loadQuestion() {
+        const data = quizData[currentIdx];
+        questionEl.innerText = data.q;
+        qNumEl.innerText = `Câu ${currentIdx + 1}/${quizData.length}`;
+        optionsEl.innerHTML = '';
+        
+        data.a.forEach((opt, i) => {
+            const div = document.createElement('div');
+            div.className = 'option';
+            if (answered[currentIdx] !== null) {
+                if (i === data.c) div.classList.add('correct');
+                if (i === answered[currentIdx] && i !== data.c) div.classList.add('wrong');
+            }
+            div.innerText = opt;
+            div.onclick = () => handleAnswer(i);
+            optionsEl.appendChild(div);
+        });
+
+        progressEl.style.width = `${((currentIdx + 1) / quizData.length) * 100}%`;
+        prevBtn.disabled = currentIdx === 0;
+        nextBtn.innerText = currentIdx === quizData.length - 1 ? "Xem kết quả" : "Tiếp theo";
+    }
+
+    function handleAnswer(i) {
+        if (answered[currentIdx] !== null) return;
+        answered[currentIdx] = i;
+        if (i === quizData[currentIdx].c) score++;
+        loadQuestion();
+    }
+
+    nextBtn.onclick = () => {
+        if (currentIdx < quizData.length - 1) {
+            currentIdx++;
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    };
+
+    prevBtn.onclick = () => {
+        if (currentIdx > 0) {
+            currentIdx--;
+            loadQuestion();
+        }
+    };
+
+    function showResult() {
+        document.getElementById('quiz-container').classList.add('hidden');
+        document.getElementById('result-container').classList.remove('hidden');
+        document.getElementById('final-score').innerText = score;
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
