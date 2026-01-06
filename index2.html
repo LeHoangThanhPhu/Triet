@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siêu Quiz Triết Học - 135 Câu Trọng Tâm</title>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --text: #0f172a;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .wrapper { max-width: 700px; width: 100%; margin-top: 20px; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 20px; }
+        .q-info { font-weight: bold; color: var(--primary); font-size: 1.1rem; margin-bottom: 5px; }
+        .progress-container { height: 8px; background: #e2e8f0; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        .question-text { font-size: 1.2rem; font-weight: 600; line-height: 1.5; margin-bottom: 25px; }
+        .options { display: grid; gap: 12px; }
+        .option { padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .option:hover:not(.disabled) { border-color: var(--primary); background: #f0f9ff; }
+        .option.correct { background: #dcfce7; border-color: var(--success); color: #166534; font-weight: bold; }
+        .option.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+        .option.disabled { cursor: not-allowed; opacity: 0.9; }
+        #feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; text-align: center; font-weight: bold; }
+        .f-correct { background: #ecfdf5; color: var(--success); border: 1px solid var(--success); }
+        .f-wrong { background: #fff1f2; color: var(--danger); border: 1px solid var(--danger); }
+        .nav { display: flex; justify-content: space-between; margin-top: 30px; }
+        button { padding: 12px 24px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+<nav style="text-align: center; margin-bottom: 20px;">
+    <a href="index.html"><button>Phần 1</button></a>
+    <a href="index2.html"><button>Phần 2</button></a>
+    <a href="index3.html"><button>Phần 3</button></a>
+</nav>
+<div class="wrapper">
+    <div class="header">
+        <h2>Ôn Tập Triết Học (135 Câu)</h2>
+        <div class="q-info" id="q-count">Câu 1 / 135</div>
+        <div class="progress-container"><div id="progress" class="progress-bar"></div></div>
+    </div>
+
+    <div id="quiz-card" class="card">
+        <div id="question" class="question-text">Đang tải dữ liệu...</div>
+        <div id="options" class="options"></div>
+        <div id="feedback"></div>
+        <div class="nav">
+            <button id="prev-btn">Câu trước</button>
+            <button id="next-btn" class="hidden">Câu tiếp</button>
+        </div>
+    </div>
+
+    <div id="result-card" class="card hidden" style="text-align: center;">
+        <h2>Kết quả hoàn thành!</h2>
+        <h1 id="score" style="font-size: 3.5rem; color: var(--primary);">0 / 135</h1>
+        <p>Bạn đã hoàn thành toàn bộ nội dung ôn tập.</p>
+        <button onclick="location.reload()" style="width: 100%;">Làm lại bài mới</button>
+    </div>
+</div>
+
+<script>
+    // Dữ liệu đã hiệu chỉnh chính xác theo giáo trình chuẩn
+    const data = [
+        { q: "Lênin cho rằng phát minh KHTN cuối thế kỷ XIX đầu XX làm tiêu tan:", a: ["Vật chất nói chung", "Dạng tồn tại cụ thể của vật chất", "Giới hạn hiểu biết cũ về vật chất và quan điểm siêu hình", "Quan niệm nguyên tử"], c: 2 },
+        { q: "Quan điểm SAI về vật chất:", a: ["Vật chất tồn tại khách quan", "Vật chất gây nên cảm giác", "Vật chất nói chung tách rời dạng cụ thể", "Ý thức phản ánh vật chất"], c: 2 },
+        { q: "Thuộc tính đặc trưng của vật chất theo Mác-Lênin:", a: ["Phạm trù triết học", "Tồn tại khách quan độc lập với ý thức", "Đem lại cảm giác", "Toàn bộ thế giới khách quan"], c: 1 },
+        { q: "Bàn, cơm, nước, lửa... là:", a: ["Các dạng tồn tại khác nhau của vật chất", "Vật chất", "Vật dụng hàng ngày", "Khái niệm sáng tạo"], c: 0 },
+        { q: "Quan niệm SAI về vận động:", a: ["Phương thức tồn tại của vật chất", "Thuộc tính cố hữu", "Sự tự vận động", "Do tác động từ yếu tố bên ngoài"], c: 3 },
+        { q: "Trường phái cho rằng vận động không thể tách rời vật chất:", a: ["Duy vật cổ đại", "Duy vật siêu hình", "Duy vật biện chứng", "Duy tâm"], c: 2 },
+        { q: "Thế giới thống nhất ở tính gì?", a: ["Tính vật chất", "Tính khách quan", "Tính hiện thực", "Tính độc lập"], c: 0 },
+        { q: "Công cụ để phản ánh khái quát và trao đổi tư tưởng là:", a: ["Công cụ lao động", "Thị giác", "Bộ óc", "Ngôn ngữ"], c: 3 },
+        { q: "Tìm đáp án SAI:", a: ["Phản ánh là thuộc tính mọi vật chất", "Ý thức là hình thức phản ánh chỉ có ở người", "Phản ánh phát triển từ thấp đến cao", "Ý thức là thuộc tính mọi vật chất"], c: 3 },
+        { q: "Ý thức tác động thực tiễn thông qua:", a: ["Tự thay đổi hiện thực", "Hoạt động thực tiễn", "Hoạt động lý luận", "Sáng tạo hiện thực"], c: 1 },
+        { q: "Yếu tố quan trọng nhất trong kết cấu ý thức:", a: ["Ý chí", "Niềm tin", "Tình cảm", "Tri thức"], c: 3 },
+        { q: "Xác định câu trả lời ĐÚNG:", a: ["Ý chí quan trọng nhất", "Ý thức có nguồn gốc tự nhiên và xã hội", "Tình cảm quan trọng nhất", "Ý thức chỉ đạo mọi hành vi"], c: 1 },
+        { q: "Chọn câu ĐÚNG:", a: ["Gan tiết ra mật", "Ý thức bẩm sinh", "Hình thành trực tiếp từ lao động", "Quá trình tiến hóa cao của giới tự nhiên"], c: 3 },
+        { q: "Bản chất ý thức là:", a: ["Hồi tưởng kiếp trước", "Má bảo thượng đế", "Phản ánh sáng tạo hiện thực khách quan", "Chụp lại nguyên vẹn"], c: 2 },
+        { q: "Theo Mác-Lênin, vật chất quyết định ý thức ở:", a: ["Nội dung, bản chất và sự vận động phát triển", "Chỉ nội dung", "Chỉ bản chất", "Chỉ vận động"], c: 0 },
+        { q: "Trước hết con người phải dựa vào gì trong thực tiễn?", a: ["Vật chất", "Ý thức", "Cả hai", "Tùy trường hợp"], c: 0 },
+        { q: "Thời điểm lượng đổi làm chất đổi căn bản gọi là:", a: ["Độ", "Điểm nút", "Bước nhảy", "Chất"], c: 1 },
+        { q: "Phép biện chứng duy vật xác lập trên lập trường:", a: ["Chủ nghĩa duy vật", "Ý niệm tuyệt đối", "Ăngghen sáng lập đơn độc", "Lênin sáng lập đơn độc"], c: 0 },
+        { q: "Biện chứng khách quan là:", a: ["Tiên nghiệm", "Biện chứng bản thân thế giới", "Không nhận thức được", "Ý niệm tuyệt đối"], c: 1 },
+        { q: "Cơ sở tôn trọng khách quan là:", a: ["Quan hệ vật chất - ý thức", "Liên hệ phổ biến", "Quy luật mâu thuẫn", "Lượng - Chất"], c: 0 },
+        { q: "Hạt nhân của phép biện chứng là quy luật:", a: ["Mâu thuẫn", "Lượng - Chất", "Phủ định của phủ định", "Đấu tranh giai cấp"], c: 0 },
+        { q: "Bước ngoặt thay đổi về lượng đưa đến thay đổi về chất:", a: ["Độ", "Điểm nút", "Bước nhảy", "Đột biến"], c: 2 },
+        { q: "Xác định quan niệm SAI về nhận thức:", a: ["Phản ánh sáng tạo", "Chỉ biết hiện tượng không nắm được bản chất", "Hình ảnh chủ quan", "Thông qua thực tiễn"], c: 1 },
+        { q: "Xác định quan niệm SAI về thực tiễn:", a: ["Nguồn gốc nhận thức", "Động lực nhận thức", "Hoạt động vật chất và tinh thần", "Tiêu chuẩn chân lý"], c: 2 },
+        { q: "Xác định quan niệm SAI về chân lý:", a: ["Tính khách quan", "Tính cụ thể", "Đưa lại lợi ích trực tiếp (chủ nghĩa thực dụng)", "Không nhất thiết thuộc số đông"], c: 2 },
+        { q: "Thực tiễn là hoạt động vật chất nhằm:", a: ["Cải tạo tự nhiên xã hội theo nhu cầu con người", "Vui chơi", "Suy ngẫm", "Lao động đơn thuần"], c: 0 },
+        { q: "Thực tiễn là điểm khởi đầu và... của vòng khâu nhận thức:", a: ["Độc lập", "Khởi đầu duy nhất", "Điểm giữa", "Điểm kết thúc"], c: 3 },
+        { q: "Chân lý là tri thức phù hợp hiện thực và được:", a: ["Đa số chấp nhận", "Thực tiễn kiểm nghiệm", "Chính phủ công nhận", "Nhà khoa học khen"], c: 1 },
+        { q: "Tìm đáp án SAI. Thực tiễn có vai trò:", a: ["Động lực", "Mục đích", "Nhận thức không cần thực tiễn", "Nguồn gốc"], c: 2 },
+        { q: "Phạm trù chỉ liên hệ bản chất, tất yếu, lặp lại:", a: ["Quy luật", "Vận động", "Phát triển", "Mặt đối lập"], c: 0 },
+        { q: "Theo Mác-Lênin, phát triển là:", a: ["Khuynh hướng chung đi lên của vận động", "Thay đổi lượng", "Thay đổi chất đơn thuần", "Vận động thụt lùi"], c: 0 },
+        { q: "Phạm trù chỉ tính quy định vốn có, làm cho sự vật là nó:", a: ["Lượng", "Chất", "Độ", "Điểm nút"], c: 1 },
+        { q: "Thuật ngữ 'biện chứng' hiện đại chỉ:", a: ["Nghệ thuật tranh luận", "Liên hệ và vận động phát triển theo quy luật", "Đứng im", "Tách rời"], c: 1 },
+        { q: "Quy luật vạch ra cách thức của sự phát triển:", a: ["Lượng - Chất", "Mâu thuẫn", "Phủ định của phủ định", "QHSX - LLSX"], c: 0 },
+        { q: "Siêu hình là cách nhận thức đối tượng ở trạng thái:", a: ["Cô lập, tĩnh tại, tách rời", "Vận động", "Liên hệ", "Biến đổi"], c: 0 },
+        { q: "Biện chứng là cách nhận thức đối tượng ở trạng thái:", a: ["Tách rời", "Vận động biến đổi, liên hệ ràng buộc", "Tĩnh tại", "Ngoài đối tượng"], c: 1 },
+        { q: "Quy luật vạch ra nguồn gốc sự phát triển:", a: ["Lượng - Chất", "Mâu thuẫn", "Phủ định của phủ định", "Lực lượng sản xuất"], c: 1 },
+        { q: "Quy luật vạch ra khuynh hướng, hình thức sự phát triển:", a: ["Lượng - Chất", "Mâu thuẫn", "Phủ định của phủ định", "Quan hệ sản xuất"], c: 2 },
+        { q: "Phạm trù chỉ sự thống nhất, đấu tranh các mặt đối lập:", a: ["Mâu thuẫn biện chứng", "Phủ định", "Phát triển", "Vận động"], c: 0 },
+        { q: "Phát triển theo Duy vật biện chứng là:", a: ["Thay đổi số lượng thuần túy", "Thay đổi vị trí", "Thay đổi cả lượng và chất (đi lên)", "Đứng im"], c: 2 },
+        { q: "Chọn phương án đúng:", a: ["Mỗi vật chỉ 1 chất", "Mỗi vật nhiều chất", "Mọi lượng đổi đều là chất đổi ngay", "Mọi thay đổi là bước nhảy"], c: 1 },
+        { q: "Chân lý KHÔNG có tính chất nào?", a: ["Khách quan", "Tương đối", "Cụ thể", "Trừu tượng"], c: 3 },
+        { q: "Độ là:", a: ["Khoảng lượng đổi mà chất chưa đổi căn bản", "Chất đổi ngay", "Điểm kết thúc", "Lượng không đổi"], c: 0 },
+        { q: "Cơ sở lý luận quan điểm toàn diện là:", a: ["Liên hệ phổ biến", "Phát triển", "Phủ định", "Mâu thuẫn"], c: 0 },
+        { q: "Chất của sự vật là:", a: ["Cấu trúc", "Thuộc tính", "Tổng số thuộc tính", "Thống nhất hữu cơ thuộc tính cơ bản"], c: 3 },
+        { q: "Đấu tranh các mặt đối lập mang tính:", a: ["Tương đối", "Tuyệt đối", "Không có tính chất", "Tùy lúc"], c: 1 },
+        { q: "Phát triển của sự vật có tính chất:", a: ["Không kế thừa", "Kế thừa nguyên xi", "Kế thừa có chọn lọc, phê phán", "Đường thẳng"], c: 2 },
+        { q: "Quan hệ Thống nhất và Đấu tranh của mặt đối lập:", a: ["Tách rời được", "Đấu tranh không cần thống nhất", "Không tách rời nhau", "Chỉ tương đối"], c: 2 },
+        { q: "Quan điểm toàn diện yêu cầu xem xét:", a: ["Một số mặt", "Nắm liên hệ cơ bản nhưng phải bao quát tổng thể", "Xem xét tất cả các mặt và vị trí vai trò từng mặt", "Xem xét hoàn cảnh"], c: 2 },
+        { q: "Tiêu chuẩn kiểm tra chân lý:", a: ["Lý thuyết", "Tri thức", "Thực tiễn", "Dư luận"], c: 2 },
+        { q: "Hình thức cơ bản nhất của thực tiễn là:", a: ["Đấu tranh giai cấp", "Sản xuất vật chất", "Thực nghiệm", "Cải tạo xã hội"], c: 1 },
+        { q: "Yếu tố thôi thúc vượt khó khăn gọi là:", a: ["Tri thức", "Tình cảm", "Ý chí", "Tiềm thức"], c: 2 },
+        { q: "Con đường biện chứng của nhận thức theo Lênin:", a: ["Cảm tính -> Lý tính", "Trực quan sinh động -> Tư duy trừu tượng -> Thực tiễn", "Hành động -> Cảm tính", "Lý tính -> Khái niệm"], c: 1 },
+        { q: "Tính chất của mối liên hệ phổ biến là:", a: ["Ngẫu nhiên", "Khách quan, phổ biến, đa dạng", "Đặc thù", "Chủ quan"], c: 1 },
+        { q: "Nội dung mối quan hệ vật chất - ý thức:", a: ["Vật chất có trước", "Ý thức có trước", "Vật chất quyết định ý thức và ý thức tác động trở lại", "Ý thức không tác động vật chất"], c: 2 },
+        { q: "Vận động là:", a: ["Di chuyển vị trí", "Chuyển trạng thái", "Thay đổi thời gian", "Mọi sự biến đổi nói chung"], c: 3 },
+        { q: "Cơ sở phát huy tính năng động sáng tạo là:", a: ["Vật chất quyết định", "Liên hệ phổ biến", "Ý thức tác động trở lại vật chất", "Thực tiễn"], c: 2 },
+        { q: "Tri thức con người ngày càng đầy đủ vì:", a: ["Thế giới vận động bộc lộ thuộc tính", "Thực tiễn trì trệ", "Thế giới đứng im", "Nhận thức lạc hậu"], c: 0 },
+        { q: "Cơ sở lý luận quan điểm Lịch sử - Cụ thể là:", a: ["Vật chất quyết định", "Mối liên hệ phổ biến và phát triển", "Độc lập khách quan", "Tính đa dạng phong phú thế giới"], c: 1 },
+        { q: "Cơ sở lý luận quan điểm Phát triển:", a: ["Nguyên lý phát triển", "Liên hệ phổ biến", "Tồn tại khách quan", "Ý thức tác động"], c: 0 },
+        { q: "Cơ sở lý luận thống nhất lý luận và thực tiễn:", a: ["Phát triển", "Liên hệ phổ biến", "Vật chất ý thức", "Quan hệ nhận thức và thực tiễn"], c: 3 },
+        { q: "Nguyên nhân sự phát triển là:", a: ["Đấu tranh mặt đối lập giải quyết mâu thuẫn", "Lượng - chất", "Phủ định", "Ngẫu nhiên"], c: 0 },
+        { q: "Nguyên lý cơ bản phép biện chứng duy vật là:", a: ["Tồn tại khách quan", "Vận động đứng im", "Liên hệ phổ biến và Phát triển", "Tính liên tục"], c: 2 },
+        { q: "Cơ sở lý luận quan điểm Toàn diện là:", a: ["Phát triển", "Liên hệ phổ biến", "Tồn tại khách quan", "Đa dạng phong phú"], c: 1 },
+        { q: "Phạm trù chỉ tính quy định khách quan về quy mô, trình độ...:", a: ["Lượng", "Chất", "Độ", "Điểm nút"], c: 0 },
+        { q: "Phương thức tồn tại của vật chất là:", a: ["Tiến hóa", "Phát triển", "Đồng hóa", "Vận động"], c: 3 },
+        { q: "Ý nghĩa phương pháp luận mối quan hệ vật chất - ý thức:", a: ["Dựa vào ý chí", "Xuất phát từ thực tế khách quan và phát huy năng động chủ quan", "Chỉ cần thực tế", "Dựa vào nghị lực"], c: 1 },
+        { q: "Ý nghĩa phương pháp luận quy luật Lượng - Chất:", a: ["Chủ động nhảy vọt ngay", "Chăm lo tích lũy về lượng để đổi về chất", "Không cần lượng", "Chỉ cần chất"], c: 1 },
+        { q: "Ý nghĩa phương pháp luận quy luật mâu thuẫn:", a: ["Triệt tiêu mâu thuẫn ngay", "Trốn tránh mâu thuẫn", "Phân tích cụ thể mâu thuẫn để giải quyết hợp lý", "Tất cả mâu thuẫn như nhau"], c: 2 },
+        { q: "Khẳng định nào sau đây SAI:", a: ["Vật chất vô cùng", "Bộ phận thế giới liên hệ nhau", "Thống nhất vật chất", "Thống nhất ý thức"], c: 3 },
+        { q: "Luận điểm SAI về Lượng - Chất:", a: ["Sự vật nào cũng thống nhất chất lượng", "Lượng nào cũng có chất tương ứng", "Lượng thường xuyên đổi", "Chất không ổn định"], c: 3 },
+        { q: "CNDV biện chứng thừa nhận nhận thức là:", a: ["Phản ánh thụ động", "Quá trình biện chứng sáng tạo từ thực tiễn", "Chỉ là cảm giác", "Bẩm sinh"], c: 1 },
+        { q: "Bản chất thế giới theo CNDV biện chứng:", a: ["Vật chất tồn tại bởi ý thức", "Vật thể vận động", "Vật chất khách quan, vĩnh viễn, vô tận", "Tùy thuộc nhận thức"], c: 2 },
+        { q: "Luận điểm SAI về ý thức:", a: ["Nguồn gốc từ lao động", "Phản ánh hiện thực", "Sản phẩm xã hội", "Chỉ là hiện tượng cá nhân riêng biệt"], c: 3 },
+        { q: "Nội dung quy luật Lượng - Chất:", a: ["Chất đổi thì lượng đổi ngay", "Chất dễ đổi hơn lượng", "Lượng đổi đến giới hạn độ làm chất đổi", "Lượng đổi chất không đổi"], c: 2 },
+        { q: "Bản chất ý thức là (câu 76):", a: ["Linh hồn", "Hình ảnh chủ quan về thế giới khách quan", "Cảm giác", "Chụp ảnh nguyên vẹn"], c: 1 },
+        { q: "Ý nghĩa phương pháp luận nguyên lý phát triển:", a: ["Đánh giá tĩnh", "Hành động sản xuất", "Quán triệt quan điểm phát triển trong nhận thức và thực tiễn", "Chỉ trong tư duy"], c: 2 },
+        { q: "Quan hệ chân lý và thực tiễn:", a: ["Chân lý hướng dẫn thực tiễn, thực tiễn kiểm nghiệm chân lý", "Tách rời", "Chân lý quyết định kinh tế", "Thực tiễn chỉ là công cụ"], c: 0 },
+        { q: "Ý nghĩa thực tiễn và chân lý (câu 81):", a: ["Chỉ cần lý luận", "Chỉ cần chính sách", "Dùng chân lý chỉ đạo thực tiễn và dùng thực tiễn hoàn thiện chân lý", "Nhận thức là đủ"], c: 2 },
+        { q: "Cơ sở mối liên hệ phổ biến là:", a: ["Tính thống nhất vật chất", "Chủ thể", "Cảm giác", "Tinh thần"], c: 0 },
+        { q: "Quan điểm toàn diện yêu cầu (câu 83):", a: ["Nhấn mạnh mọi yếu tố", "Coi các liên hệ ngang nhau", "Nhận thức sự vật như hệ thống chỉnh thể các mối liên hệ", "Bỏ qua liên hệ phụ"], c: 2 },
+        { q: "Đánh giá con người cần:", a: ["Nhấn mạnh 1 mặt", "Dựa trên lợi ích", "Đặt trong điều kiện, thời đại, mối quan hệ tổng thể", "Bỏ qua lịch sử"], c: 2 },
+        { q: "Nguồn gốc trực tiếp quan trọng nhất của ý thức:", a: ["Tác động tự nhiên", "Lao động và Ngôn ngữ", "Bộ não", "Gen"], c: 1 },
+        { q: "Trong thực tế cần (câu 86):", a: ["Không tích lũy lượng", "Thay đổi chất dựa trên tích lũy lượng", "Rụt rè", "Chờ đợi"], c: 1 },
+        { q: "Hình thức nhận thức đào sâu bản chất:", a: ["Cảm tính", "Nhận thức Lý tính, Khoa học, Lý luận", "Thông thường", "Kinh nghiệm"], c: 1 },
+        { q: "Luận điểm SAI về nhận thức cảm tính:", a: ["Gắn liền thực tiễn", "Chưa phân biệt bản chất", "Phản ánh SAI hoàn toàn", "Chưa đầy đủ sâu sắc"], c: 2 },
+        { q: "Quan niệm SAI về mâu thuẫn:", a: ["Liên hệ giữa mặt đối lập", "Khách quan phổ biến", "Chỉ có trong tư duy", "Thống nhất và đấu tranh mặt đối lập"], c: 2 },
+        { q: "Quan hệ chất và kết cấu:", a: ["Chất quy định bởi kết cấu", "Độc lập hoàn toàn", "Tùy trường hợp", "Không liên quan"], c: 0 },
+        { q: "Muốn ý thức đúng phải:", a: ["Xuất phát từ thực tế khách quan", "Theo nguyện vọng", "Tự nghĩ", "Hỏi ý kiến"], c: 0 },
+        { q: "Mối liên hệ có vai trò:", a: ["Chỉ cần 1 liên hệ", "Ngang nhau", "Khác nhau, cần xem xét mọi mối liên hệ", "Chỉ cần 2"], c: 2 },
+        { q: "Thế giới vô cơ, sinh vật, xã hội tách rời là quan điểm:", a: ["Siêu hình", "Biện chứng", "Duy tâm khách quan", "Duy tâm chủ quan"], c: 0 },
+        { q: "Tồn tại là phức hợp cảm giác là quan điểm:", a: ["Siêu hình", "Biện chứng", "Duy tâm khách quan", "Duy tâm chủ quan"], c: 3 },
+        { q: "Bản chất thế giới là Ý niệm (Plato) là quan điểm:", a: ["Siêu hình", "Biện chứng", "Duy tâm khách quan", "Duy tâm chủ quan"], c: 2 },
+        { q: "Kết cấu ý thức gồm:", a: ["Não, thế giới, giác quan", "Tri thức, thực tiễn", "Tri thức, tình cảm, ý chí", "Nghị lực"], c: 2 },
+        { q: "Yếu tố cốt lõi ý thức là:", a: ["Niềm tin", "Tình cảm", "Tri thức", "Lý trí"], c: 2 },
+        { q: "Vật chất đối với ý thức:", a: ["Vật chất có trước, là nguồn gốc, quyết định ý thức", "Vật chất là sản phẩm", "Tùy thuộc ý thức", "Ý thức tạo ra vật chất"], c: 0 },
+        { q: "Ý thức tác động vật chất thông qua:", a: ["Hoạt động thực tiễn", "Tự chuyển hóa", "Trực tiếp", "Không tác động"], c: 0 },
+        { q: "Phép biện chứng duy vật là khoa học về:", a: ["Vận động tự nhiên", "Xã hội", "Quy luật phổ biến của vận động phát triển", "Kỹ thuật"], c: 2 },
+        { q: "Đặc trưng phép biện chứng duy vật là:", a: ["Duy vật khoa học thống nhất TGQ và PP luận", "Duy tâm", "Tách rời", "Cảm tính"], c: 0 },
+        { q: "Mối liên hệ dùng để chỉ:", a: ["Ý chí con người", "Quy định giữa các mặt trong sự vật", "Tách rời sự vật", "Quy định, tác động, chuyển hóa lẫn nhau khách quan"], c: 3 },
+        { q: "Tính chất mâu thuẫn biện chứng:", a: ["Lịch sử", "Tuyệt đối", "Khách quan, phổ biến, đa dạng phong phú", "Tương đối"], c: 2 },
+        { q: "Đối lập quan điểm toàn diện là:", a: ["Chiết trung", "Ngụy biện", "Phiến diện", "Phát triển"], c: 2 },
+        { q: "Nước 0 - 100 độ C là:", a: ["Độ", "Chất", "Lượng", "Bước nhảy"], c: 0 },
+        { q: "Nước chuyển trạng thái tại 100 độ C là:", a: ["Độ", "Bước nhảy", "Chuyển hóa", "Tịnh tiến"], c: 1 },
+        { q: "Phát triển là quá trình vận động đi lên từ thấp đến cao:", a: ["Thay đổi số lượng", "Thay đổi vị trí", "Phát triển", "Đứng im"], c: 2 },
+        { q: "Bước nhảy chỉ:", a: ["Sự thay đổi về chất", "Lượng", "Mâu thuẫn", "Tích lũy"], c: 0 },
+        { q: "Điểm nút chỉ:", a: ["Thống nhất chất lượng", "Chất đổi sang lượng", "Thời điểm diễn ra sự thay đổi chất", "Giới hạn độ"], c: 2 },
+        { q: "Nhận thức lý tính gồm:", a: ["Cảm giác - Tri giác - Biểu tượng", "Cảm giác - Phán đoán", "Khái niệm - Phán đoán - Suy lý", "Suy lý - Tri giác"], c: 2 },
+        { q: "Vòng khâu nhận thức (Lênin):", a: ["Cảm tính đến lý tính", "Hành động đến tư duy", "Cảm tính -> Lý tính -> Thực tiễn", "Trực quan sinh động -> Tư duy trừu tượng -> Thực tiễn"], c: 3 },
+        { q: "Cái khó ló cái khôn thể hiện:", a: ["Tính năng động sáng tạo của ý thức", "Góp gió thành bão", "Mài sắt thành kim", "Chim khôn"], c: 0 },
+        { q: "Người vô lo trẻ lâu thể hiện:", a: ["Ý thức tác động vật chất", "Vật chất quyết định", "Vật chất có trước", "Không tác động"], c: 0 },
+        { q: "Tuyệt đối hóa đồng tiền là quan niệm:", a: ["Tuyệt đối hóa vật chất", "Tuyệt đối hóa ý thức", "Đề cao tinh thần", "Coi thường vật chất"], c: 0 },
+        { q: "Quan hệ giữa trực quan sinh động và tư duy trừu tượng:", a: ["Độc lập", "Biện chứng", "Tách rời", "Ngẫu nhiên"], c: 1 },
+        { q: "Mệnh đề ĐÚNG về nội dung - hình thức:", a: ["Nội dung quyết định hình thức", "Hình thức quyết định nội dung", "Nội dung biến đổi nhanh hơn hình thức", "Không quan hệ"], c: 2 },
+        { q: "Phương pháp biện chứng là nhận thức sự vật trong:", a: ["Tách rời", "Liên hệ, ràng buộc, vận động phát triển", "Trạng thái tĩnh", "Ngoài đối tượng"], c: 1 },
+        { q: "Gia đình khác lớp học do quan hệ con người khác nhau bản chất:", a: ["Thời gian", "Không gian", "Môi trường", "Bản chất quan hệ xã hội"], c: 3 },
+        { q: "Có công mài sắt phản ánh quy luật:", a: ["Mâu thuẫn", "Lượng - Chất", "Phủ định", "Giai cấp"], c: 1 },
+        { q: "Nhà trường kết hợp gia đình thể hiện quan điểm:", a: ["Lịch sử", "Toàn diện", "Phát triển", "Trừu tượng"], c: 1 },
+        { q: "Chính sách ngoại giao đa phương hóa thể hiện quan điểm:", a: ["Cụ thể", "Toàn diện", "Phát triển", "Toàn diện, lịch sử - cụ thể, phát triển"], c: 3 },
+        { q: "Trăm đom đóm không bằng bó đuốc chỉ ra:", a: ["Không thể lấy lượng thay chất", "Lượng đổi", "Chú ý lượng", "Chú ý độ"], c: 0 },
+        { q: "Góp gió thành bão là:", a: ["Chất đổi", "Tích lũy lượng để đổi chất", "Lượng đổi", "Chuyển chất thành lượng"], c: 1 },
+        { q: "Giải quyết mâu thuẫn cần:", a: ["Phân loại mâu thuẫn và có giải pháp phù hợp", "Giải quyết 1 cái", "Chỉ giải quyết cái đang có", "Theo hướng có lợi"], c: 0 },
+        { q: "Cách mạng Tháng 8 là bước nhảy:", a: ["Dần dần", "Cục bộ", "Lớn, đột biến", "Toàn bộ, đột biến"], c: 3 },
+        { q: "Nhận thức lý tính phản ánh sự vật ở tính:", a: ["Hời hợt", "Cụ thể rõ ràng", "Khái quát, trừu tượng, bản chất", "Trực tiếp"], c: 2 },
+        { q: "Bảo thủ trì trệ là vi phạm quy luật:", a: ["Lượng - chất", "Phủ định của phủ định (không chấp nhận cái mới)", "Mâu thuẫn", "Xã hội"], c: 1 },
+        { q: "Nôn nóng tả khuynh là vi phạm quy luật:", a: ["Lượng - Chất (chưa tích đủ lượng đã đòi đổi chất)", "Phủ định", "Mâu thuẫn", "Tự nhiên"], c: 0 },
+        { q: "Không xác định đúng mặt đối lập là vi phạm quy luật:", a: ["Lượng - Chất", "Phủ định", "Mâu thuẫn (hạt nhân động lực)", "Tự nhiên"], c: 2 },
+        { q: "Nôn nóng đốt cháy giai đoạn là sai lầm về:", a: ["Mâu thuẫn", "Lượng - Chất", "Phủ định", "Tự nhiên"], c: 1 },
+        { q: "Nhận thức cảm tính có tính chất:", a: ["Sâu sắc", "Trừu tượng", "Sinh động, cụ thể, trực tiếp, bề ngoài", "Khái quát"], c: 2 },
+        { q: "Nhận thức lý tính có tính chất:", a: ["Trực tiếp", "Sinh động bề ngoài", "Trừu tượng, gián tiếp, khái quát, sâu sắc", "Hời hợt"], c: 2 },
+        { q: "Quá mù ra mưa thể hiện:", a: ["Lượng vượt độ dẫn đến chất đổi", "Tạo chuyển hóa", "Lượng đổi", "Chuyển hóa chất"], c: 0 },
+        { q: "Tàu đậu trên sân ga ở trạng thái:", a: ["Vận động", "Đứng im", "Đứng im tuyệt đối", "Vận động trong cân bằng (đứng im tương đối)"], c: 3 }
+    ];
+
+    let current = 0, score = 0, answers = new Array(data.length).fill(null);
+    const qBox = document.getElementById('question'), opts = document.getElementById('options');
+    const fback = document.getElementById('feedback'), nBtn = document.getElementById('next-btn');
+
+    function render() {
+        const item = data[current];
+        qBox.innerText = item.q;
+        document.getElementById('q-count').innerText = `Câu ${current + 1} / ${data.length}`;
+        opts.innerHTML = '';
+        fback.style.display = 'none';
+        nBtn.classList.add('hidden');
+
+        item.a.forEach((txt, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'option';
+            if (answers[current] !== null) {
+                btn.classList.add('disabled');
+                if (i === item.c) btn.classList.add('correct');
+                if (i === answers[current] && i !== item.c) btn.classList.add('wrong');
+            }
+            btn.innerText = txt;
+            btn.onclick = () => select(i);
+            opts.appendChild(btn);
+        });
+
+        if (answers[current] !== null) showFeedback(answers[current]);
+        document.getElementById('progress').style.width = `${((current + 1) / data.length) * 100}%`;
+    }
+
+    function select(i) {
+        if (answers[current] !== null) return;
+        answers[current] = i;
+        if (i === data[current].c) score++;
+        render();
+    }
+
+    function showFeedback(i) {
+        const item = data[current];
+        fback.style.display = 'block';
+        if (i === item.c) {
+            fback.innerText = "Chính xác! ✅";
+            fback.className = "f-correct";
+        } else {
+            fback.innerText = `Sai rồi! ❌ Đáp án: ${item.a[item.c]}`;
+            fback.className = "f-wrong";
+        }
+        nBtn.classList.remove('hidden');
+    }
+
+    nBtn.onclick = () => { if (current < data.length - 1) { current++; render(); } else end(); };
+    document.getElementById('prev-btn').onclick = () => { if (current > 0) { current--; render(); } };
+
+    function end() {
+        document.getElementById('quiz-card').classList.add('hidden');
+        document.getElementById('result-card').classList.remove('hidden');
+        document.getElementById('score').innerText = `${score} / ${data.length}`;
+    }
+
+    render();
+</script>
+</body>
+</html>
